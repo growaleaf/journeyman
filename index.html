@@ -1,0 +1,273 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Journeyman — teach the one who scores you</title>
+<meta name="description" content="You demonstrate. A real, honest little learner watches your hands and copies them. You are scored only on what the apprentice can do alone.">
+<meta property="og:title" content="Journeyman">
+<meta property="og:description" content="A craft game about teaching. You are scored only on your apprentice's independent work — so teach with care.">
+<meta property="og:type" content="website">
+<meta name="theme-color" content="#3a2415">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%94%A8%3C/text%3E%3C/svg%3E">
+<style>
+  :root{
+    --wood-dark:#241610;
+    --wood:#3a2415;
+    --wood-light:#57351f;
+    --amber:#d99a44;
+    --amber-bright:#f0b866;
+    --amber-dim:#9a6f3c;
+    --clay:#c97b52;
+    --cream:#efe1c8;
+    --cream-dim:#c9b696;
+    --ok:#8fae5a;
+    --bad:#b25a45;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--wood-dark);
+    color:var(--cream);
+    font-family:Georgia,'Times New Roman',serif;
+    min-height:100dvh;
+    display:flex;
+    justify-content:center;
+  }
+  .app{
+    width:100%;
+    max-width:480px;
+    min-height:100dvh;
+    display:flex;
+    flex-direction:column;
+    padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+    background:
+      radial-gradient(ellipse at 50% 0%, var(--wood-light) 0%, var(--wood) 55%, var(--wood-dark) 100%);
+  }
+  header{
+    padding:14px 18px 8px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    border-bottom:1px solid rgba(217,154,68,0.18);
+  }
+  header .brand{
+    font-size:1.05rem;
+    letter-spacing:0.04em;
+    color:var(--amber-bright);
+  }
+  header .brand .hammer{ margin-right:6px; }
+  .rep-pips{ display:flex; gap:3px; align-items:center; }
+  .rep-pip{
+    width:8px;height:8px;border-radius:50%;
+    background:rgba(239,225,200,0.15);
+    border:1px solid rgba(217,154,68,0.3);
+  }
+  .rep-pip.filled{ background:var(--amber); border-color:var(--amber-bright); }
+
+  main{ flex:1; display:flex; flex-direction:column; padding:18px; gap:16px; }
+  .screen{ display:none; flex-direction:column; gap:16px; flex:1; }
+  .screen.active{ display:flex; }
+
+  h1{ font-size:1.9rem; margin:0.2em 0 0; color:var(--amber-bright); font-weight:400; }
+  h2{ font-size:1.3rem; margin:0; color:var(--amber-bright); font-weight:400; }
+  p{ line-height:1.5; color:var(--cream-dim); margin:0.3em 0; }
+  .tagline{ font-style:italic; color:var(--amber-dim); }
+
+  .center{ text-align:center; }
+  .title-emblem{ font-size:3.2rem; text-align:center; margin-top:8px; }
+
+  button{
+    font-family:inherit;
+    font-size:1rem;
+    padding:13px 18px;
+    border-radius:8px;
+    border:1px solid var(--amber-dim);
+    background:linear-gradient(180deg, var(--amber) 0%, #b87a2f 100%);
+    color:#2a1608;
+    font-weight:bold;
+    cursor:pointer;
+    letter-spacing:0.02em;
+  }
+  button:active{ transform:translateY(1px); }
+  button.secondary{
+    background:transparent;
+    color:var(--cream);
+    border:1px solid rgba(217,154,68,0.4);
+    font-weight:normal;
+  }
+  button.ghost{
+    background:transparent;
+    color:var(--amber-dim);
+    border:none;
+    text-decoration:underline;
+    padding:6px 4px;
+    font-weight:normal;
+  }
+  .row{ display:flex; gap:10px; }
+  .row > button{ flex:1; }
+
+  .card{
+    background:rgba(0,0,0,0.18);
+    border:1px solid rgba(217,154,68,0.2);
+    border-radius:10px;
+    padding:14px;
+  }
+
+  .commission-line{ display:flex; justify-content:space-between; align-items:baseline; }
+  .commission-line .craft{ color:var(--amber-bright); }
+  .commission-line .count{ color:var(--cream-dim); font-size:0.85rem; }
+
+  .canvases{ display:flex; gap:10px; }
+  .canvas-box{ flex:1; display:flex; flex-direction:column; align-items:center; gap:4px; }
+  .canvas-box .label{ font-size:0.78rem; color:var(--amber-dim); letter-spacing:0.03em; }
+  canvas{
+    width:100%;
+    aspect-ratio:1/1;
+    background:rgba(0,0,0,0.25);
+    border:1px solid rgba(217,154,68,0.25);
+    border-radius:8px;
+    touch-action:none;
+  }
+
+  #workCanvas{ cursor:crosshair; }
+
+  .hint{ font-size:0.85rem; color:var(--cream-dim); text-align:center; }
+
+  .grade-big{ font-size:3.4rem; text-align:center; color:var(--amber-bright); }
+  .grade-sub{ text-align:center; color:var(--cream-dim); }
+  .unlock-banner{
+    background:rgba(143,174,90,0.15);
+    border:1px solid var(--ok);
+    color:var(--ok);
+    border-radius:8px;
+    padding:10px;
+    text-align:center;
+    font-size:0.9rem;
+  }
+
+  .share-box{
+    background:rgba(0,0,0,0.25);
+    border:1px dashed rgba(217,154,68,0.4);
+    border-radius:8px;
+    padding:10px;
+    font-size:0.82rem;
+    color:var(--cream-dim);
+    word-break:break-word;
+  }
+
+  footer{ padding:10px 18px 18px; text-align:center; }
+  footer a{ color:var(--amber-dim); font-size:0.8rem; }
+
+  ol,ul{ color:var(--cream-dim); line-height:1.6; padding-left:1.3em; }
+  li b{ color:var(--cream); }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <header>
+    <div class="brand"><span class="hammer">🔨</span>Journeyman</div>
+    <div class="rep-pips" id="repPips" aria-label="reputation"></div>
+  </header>
+
+  <main>
+
+    <section class="screen active" id="screen-title">
+      <div class="title-emblem">🔨</div>
+      <h1 class="center">Journeyman</h1>
+      <p class="tagline center">You are scored only on what your apprentice can do without you.</p>
+      <p>A wordless apprentice watches your hands. Show them a bowl, a hinge, a joint — clean and consistent, or hurried and sloppy, it makes no difference to the clay. What you demonstrate is what they learn. What they learn is what the guild grades.</p>
+      <div class="row">
+        <button id="btnStart">Begin the apprenticeship</button>
+      </div>
+      <button class="ghost" id="btnHowTo">How this works</button>
+    </section>
+
+    <section class="screen" id="screen-howto">
+      <h2>How this works</h2>
+      <ol>
+        <li><b>A commission arrives.</b> The guild wants a bowl, a hinge, or a joint, roughly shaped like the reference on the left.</li>
+        <li><b>You demonstrate</b> by dragging a stroke on the workbench — or you hold back and demonstrate nothing at all. Restraint teaches too: a bad stroke taught badly is worse than no lesson.</li>
+        <li><b>The apprentice attempts the commission alone,</b> using only what you've shown them so far — a real nearest-neighbor learner, not a hidden dice roll.</li>
+        <li><b>The guild grades the apprentice's work,</b> not yours. Reputation rises with good grades. At reputation 10, they graduate.</li>
+        <li>Teach the same shape the same way every time and the apprentice will be reliable but narrow. Teach a wide range, consistently, and they generalize. Teach sloppily and they will faithfully reproduce your sloppiness.</li>
+      </ol>
+      <button class="secondary" id="btnHowToBack">Back</button>
+    </section>
+
+    <section class="screen" id="screen-play">
+      <div class="card">
+        <div class="commission-line">
+          <span class="craft" id="commissionCraft">the guild wants a bowl</span>
+          <span class="count" id="demoCount">0 demonstrations taught</span>
+        </div>
+      </div>
+
+      <div class="canvases">
+        <div class="canvas-box">
+          <div class="label">REFERENCE</div>
+          <canvas id="refCanvas" width="200" height="200"></canvas>
+        </div>
+        <div class="canvas-box">
+          <div class="label">YOUR HANDS</div>
+          <canvas id="workCanvas" width="200" height="200"></canvas>
+        </div>
+      </div>
+      <p class="hint">Drag on the workbench to shape a demonstration. Match the reference, or don't — the apprentice only knows what you show them.</p>
+
+      <div class="row">
+        <button class="secondary" id="btnDecline">Hold back</button>
+        <button id="btnTeach">Teach &amp; let them try</button>
+      </div>
+    </section>
+
+    <section class="screen" id="screen-result">
+      <div class="card">
+        <div class="commission-line">
+          <span class="craft" id="resultCraft">pottery</span>
+          <span class="count" id="resultTaught">taught this round</span>
+        </div>
+      </div>
+      <div class="canvases">
+        <div class="canvas-box">
+          <div class="label">REFERENCE (ghost)</div>
+          <canvas id="resultRefCanvas" width="200" height="200"></canvas>
+        </div>
+        <div class="canvas-box">
+          <div class="label">APPRENTICE, ALONE</div>
+          <canvas id="resultAttemptCanvas" width="200" height="200"></canvas>
+        </div>
+      </div>
+      <div class="grade-big" id="gradeBig">7/10</div>
+      <div class="grade-sub" id="gradeSub">reputation 3.2 / 10</div>
+      <div class="unlock-banner" id="unlockBanner" style="display:none;"></div>
+      <div class="row">
+        <button id="btnNext">Next commission</button>
+      </div>
+      <button class="ghost" id="btnShare">Copy a line to share</button>
+      <div class="share-box" id="shareBox" style="display:none;"></div>
+    </section>
+
+    <section class="screen" id="screen-graduate">
+      <div class="title-emblem">🔨</div>
+      <h1 class="center">Graduation day</h1>
+      <p class="center" id="graduateLine">The apprentice threw the guild bowl alone, and the guild called it good.</p>
+      <p class="center tagline">Whatever they can do now, they learned from watching you do it — patiently or not.</p>
+      <div class="row">
+        <button id="btnFreePlay">Keep teaching (free play)</button>
+      </div>
+      <button class="ghost" id="btnShareGrad">Copy a line to share</button>
+      <div class="share-box" id="shareBoxGrad" style="display:none;"></div>
+    </section>
+
+  </main>
+
+  <footer>
+    <a href="#" id="btnReset">start a new apprentice</a>
+  </footer>
+
+</div>
+<script type="module" src="./game.js"></script>
+</body>
+</html>
